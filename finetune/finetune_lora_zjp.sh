@@ -14,16 +14,18 @@ GPUS_PER_NODE=8
 # Number of GPU workers, for single-worker training, please set to 1
 NNODES=1
 
-MODEL="/mnt/cephfs/LLM_MODEL_HUB/qwen/Qwen-72B-Chat" # Set the path if you do not want to load from huggingface directly
+nj_wfs_home=/mnt/wfs/mmnanjingwfssh/project_security-others-common/doodleliang
+ceph_home=/mnt/cephfs
+MODEL="${ceph_home}/LLM_MODEL_HUB/qwen/Qwen-72B-Chat" # Set the path if you do not want to load from huggingface directly
 # ATTENTION: specify the path to your training data, which should be a json file consisting of a list of conversations.
 # See the section for finetuning in README for more information.
-DATA="data/zjp_train.json"
-DS_CONFIG_PATH="finetune/ds_config_zero2.json"
+DATA="${ceph_home}/doodleliang/Qwen/data/zjp_train.json"
+DS_CONFIG_PATH="${ceph_home}/doodleliang/Qwen/finetune/ds_config_zero3.json"
 
 DISTRIBUTED_ARGS="
     --nproc_per_node $GPUS_PER_NODE \
     --nnodes $NNODES \
-    --node_rank $NODE_RANK \
+    --node_rank $RANK \
     --master_addr $MASTER_ADDR \
     --master_port $MASTER_PORT
 "
@@ -31,8 +33,8 @@ DISTRIBUTED_ARGS="
 torchrun $DISTRIBUTED_ARGS finetune.py \
     --model_name_or_path $MODEL \
     --data_path $DATA \
-    --bf16 True \
-    --output_dir /mnt/cephfs/doodleliang/model/zjp_qwen_72b \
+    --fp16 True \
+    --output_dir ${ceph_home}/doodleliang/model/zjp_qwen_72b \
     --num_train_epochs 3 \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
